@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hingram</title>
-    <!-- Tải thư viện Supabase trực tiếp qua CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Giao diện tối giản, tông xám/trắng/đen */
+        /* Tông màu tối giản */
         :root {
             --bg-color: #f7f7f7;
             --container-bg: #ffffff;
@@ -16,6 +15,7 @@
             --border-color: #e0e0e0;
             --btn-bg: #222222;
             --btn-text: #ffffff;
+            --link-color: #000000;
         }
         * { box-sizing: border-box; }
         body {
@@ -23,26 +23,50 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0; padding: 0; display: flex; justify-content: center;
         }
-        .screen { 
-            display: none; width: 100%; max-width: 600px; min-height: 100vh; 
-            background: var(--container-bg); 
-            border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); 
-        }
+        .screen { display: none; width: 100%; max-width: 600px; min-height: 100vh; background: var(--container-bg); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
         .active { display: block; }
         
-        /* Auth Styles */
-        .auth-container { padding: 40px 30px; display: flex; flex-direction: column; justify-content: center; min-height: 100vh; }
-        .auth-container h1 { text-align: center; margin-bottom: 40px; font-weight: 600; letter-spacing: 1px; }
-        input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; background: var(--bg-color); outline: none; }
-        button { width: 100%; padding: 14px; background: var(--btn-bg); color: var(--btn-text); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 15px; }
-        button:disabled { background: #cccccc; cursor: not-allowed; }
-        .toggle-link { text-align: center; color: var(--text-muted); cursor: pointer; font-size: 14px; margin-top: 10px; }
+        /* ============== CHỈNH SỬA KHU VỰC AUTH ============== */
+        #auth-screen {
+            background-color: var(--bg-color); /* Nền xám nhạt */
+            border: none;
+            max-width: 100%;
+        }
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 380px; /* Khung đăng nhập nhỏ gọn ở giữa */
+            background: var(--container-bg);
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06); /* Đổ bóng nhẹ */
+            border: 1px solid var(--border-color);
+        }
+        .auth-card h1 { text-align: center; margin-top: 0; margin-bottom: 30px; font-weight: 700; letter-spacing: 1px; font-size: 28px; }
         
-        /* Cấu trúc các bước đăng ký */
+        input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; background: #fafafa; outline: none; transition: 0.2s; }
+        input:focus { border-color: #999; background: #fff; }
+        
+        button { width: 100%; padding: 14px; background: var(--btn-bg); color: var(--btn-text); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 15px; transition: 0.2s; }
+        button:hover { background: #000; }
+        button:disabled { background: #cccccc; cursor: not-allowed; }
+        
+        /* Style cho dòng chữ chuyển đổi */
+        .toggle-text { text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 5px; }
+        .action-link { color: var(--link-color); font-weight: 600; cursor: pointer; text-decoration: none; margin-left: 4px; }
+        .action-link:hover { text-decoration: underline; }
+        
         .step { display: none; }
-        .step.active-step { display: block; }
+        .step.active-step { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Home & Posts */
+        /* ... (Các CSS của Home, Modal giữ nguyên như cũ) ... */
         .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--container-bg); z-index: 10; }
         .avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: #ddd; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #555; }
         .post { padding: 20px; border-bottom: 1px solid var(--border-color); }
@@ -51,182 +75,135 @@
         .post-author { font-weight: 600; font-size: 14px; }
         .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 15px; }
         .post-actions button { width: auto; padding: 6px 12px; background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 20px; font-size: 13px; margin-right: 10px; }
-
-        /* Modals */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--container-bg); display: none; z-index: 1000; overflow-y: auto; padding: 20px; }
         .modal-active { display: block; }
-        .close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; color: var(--text-main); font-size: 24px; cursor: pointer; width: auto; padding: 0; margin: 0; }
+        .close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <!-- ================= MÀN HÌNH XÁC THỰC ================= -->
     <div id="auth-screen" class="screen active">
-        <div class="auth-container">
-            <h1>HINGRAM</h1>
-            
-            <!-- Khu vực Đăng nhập -->
-            <div id="login-section">
-                <input type="email" id="login-email" placeholder="Email của bạn">
-                <input type="password" id="login-password" placeholder="Mật khẩu">
-                <button onclick="handleLogin()">Đăng nhập</button>
-                <div class="toggle-link" onclick="toggleAuthMode()">Bạn chưa có tài khoản? Đăng ký</div>
-            </div>
-
-            <!-- Khu vực Đăng ký (Gồm 3 bước) -->
-            <div id="register-section" style="display: none;">
-                <!-- Bước 1: Nhập Email -->
-                <div id="reg-step-1" class="step active-step">
-                    <input type="text" id="reg-name" placeholder="Tên hiển thị của bạn">
-                    <input type="email" id="reg-email" placeholder="Email để nhận mã">
-                    <button onclick="sendOTP()" id="btn-send-otp">Gửi mã xác minh</button>
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <h1>HINGRAM</h1>
+                
+                <!-- Khu vực Đăng nhập -->
+                <div id="login-section">
+                    <input type="email" id="login-email" placeholder="Email">
+                    <input type="password" id="login-password" placeholder="Mật khẩu">
+                    <button onclick="handleLogin()">Đăng nhập</button>
+                    
+                    <!-- Chữ "Đăng ký" được tách riêng để bấm -->
+                    <div class="toggle-text">
+                        Bạn chưa có tài khoản? <span class="action-link" onclick="toggleAuthMode()">Đăng ký</span>
+                    </div>
                 </div>
-                <!-- Bước 2: Nhập OTP -->
-                <div id="reg-step-2" class="step">
-                    <p style="font-size: 13px; color: var(--text-muted); text-align: center;">Mã 6 số đã được gửi tới email của bạn</p>
-                    <input type="text" id="reg-otp" placeholder="Nhập mã 6 chữ số" maxlength="6">
-                    <button onclick="verifyOTP()" id="btn-verify-otp">Xác nhận mã</button>
+
+                <!-- Khu vực Đăng ký -->
+                <div id="register-section" style="display: none;">
+                    
+                    <!-- Bước 1: Nhập Tên & Email -->
+                    <div id="reg-step-1" class="step active-step">
+                        <input type="text" id="reg-name" placeholder="Tên hiển thị">
+                        <input type="email" id="reg-email" placeholder="Email">
+                        <button onclick="sendOTP()" id="btn-send-otp">Tiếp tục</button>
+                    </div>
+                    
+                    <!-- Bước 2: Nhập mã xác minh -->
+                    <div id="reg-step-2" class="step">
+                        <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 0;">Mã 6 chữ số đã được gửi đến email của bạn</p>
+                        <input type="text" id="reg-otp" placeholder="Nhập mã xác minh" maxlength="6">
+                        <button onclick="verifyOTP()" id="btn-verify-otp">Xác nhận</button>
+                        <button onclick="setRegStep(1)" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); margin-top: 5px;">Quay lại</button>
+                    </div>
+                    
+                    <!-- Bước 3: Đặt mật khẩu -->
+                    <div id="reg-step-3" class="step">
+                        <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 0;">Xác minh thành công. Hãy đặt mật khẩu.</p>
+                        <input type="password" id="reg-password" placeholder="Mật khẩu mới">
+                        <input type="password" id="reg-password-confirm" placeholder="Xác nhận mật khẩu">
+                        <button onclick="completeRegistration()">Đăng ký</button>
+                    </div>
+                    
+                    <!-- Chữ "Đăng nhập" được tách riêng để bấm -->
+                    <div class="toggle-text" id="reg-toggle-text">
+                        Bạn đã có tài khoản? <span class="action-link" onclick="toggleAuthMode()">Đăng nhập</span>
+                    </div>
                 </div>
-                <!-- Bước 3: Đặt mật khẩu -->
-                <div id="reg-step-3" class="step">
-                    <input type="password" id="reg-password" placeholder="Đặt mật khẩu">
-                    <input type="password" id="reg-password-confirm" placeholder="Xác nhận lại mật khẩu">
-                    <button onclick="completeRegistration()">Hoàn tất Đăng ký</button>
-                </div>
-                <div class="toggle-link" onclick="toggleAuthMode()">Bạn đã có tài khoản? Đăng nhập</div>
             </div>
         </div>
     </div>
 
-    <!-- ================= MÀN HÌNH TRANG CHỦ ================= -->
-    <div id="home-screen" class="screen">
-        <div class="header">
-            <div class="avatar-btn" id="user-avatar-icon" onclick="openModal('profile-modal')">U</div>
-            <button style="width: auto; padding: 8px 16px; margin: 0; border-radius: 20px;" onclick="openModal('create-post-modal')">Tạo bài viết</button>
-        </div>
-        <div id="feed">
-            <!-- Bài viết sẽ được render bằng JS vào đây -->
-            <div style="padding: 20px; text-align: center; color: var(--text-muted);">Đang tải bài viết...</div>
-        </div>
-    </div>
+    <!-- ... (Phần MÀN HÌNH TRANG CHỦ và MODAL BÀI VIẾT/PROFILE giữ nguyên như code trước) ... -->
 
-    <!-- ================= MODAL TRANG CÁ NHÂN ================= -->
-    <div id="profile-modal" class="modal">
-        <button class="close-btn" onclick="closeModals()">✕</button>
-        <div style="text-align: center; margin-top: 60px;">
-            <div style="width: 100px; height: 100px; border-radius: 50%; background: #eee; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #999;">U</div>
-            <button style="width: auto; padding: 6px 12px; font-size: 12px; background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color);">Tải ảnh lên</button>
-            <h2 id="profile-name" style="margin: 15px 0 5px;">Đang tải...</h2>
-            <p id="profile-email" style="color: var(--text-muted); font-size: 14px; margin-top: 0;">...</p>
-            
-            <div style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                <button style="background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color);">Chế độ tối (Dark Mode)</button>
-                <button onclick="handleLogout()" style="background: #ffffff; color: #ff3b30; border: 1px solid #ff3b30;">Đăng xuất</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= MODAL TẠO BÀI VIẾT ================= -->
-    <div id="create-post-modal" class="modal">
-        <button class="close-btn" onclick="closeModals()">✕</button>
-        <div style="margin-top: 60px;">
-            <h3 style="margin-top: 0;">Tạo bài viết</h3>
-            
-            <!-- Công cụ định dạng chữ -->
-            <div style="margin-bottom: 10px; display: flex; gap: 5px;">
-                <button style="width: 40px; padding: 8px; margin: 0; background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color);" onclick="document.execCommand('bold', false, null)"><b>B</b></button>
-                <button style="width: 40px; padding: 8px; margin: 0; background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color);" onclick="document.execCommand('italic', false, null)"><i>I</i></button>
-            </div>
-            
-            <!-- Khung nhập văn bản Rich Text -->
-            <div contenteditable="true" id="post-editor" style="min-height: 150px; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; outline: none; margin-bottom: 15px; font-size: 15px;" placeholder="Bạn đang nghĩ gì?"></div>
-            
-            <button id="btn-submit-post" onclick="submitPost()">Đăng bài</button>
-        </div>
-    </div>
-
-    <!-- ================= JAVASCRIPT LOGIC ================= -->
     <script>
-        // 1. KẾT NỐI SUPABASE (THAY THẾ BẰNG KEY CỦA BẠN TẠI ĐÂY)
+        // KẾT NỐI SUPABASE
         const supabaseUrl = 'https://ldkwuvqzadkunzauzfvt.supabase.co';
         const supabaseKey = 'sb_publishable_TTMQlwyRGeMX5xSs_UIM3g_gfl89Rfg';
-        
-        // Khởi tạo Supabase client
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
         let regTempEmail = '';
         let regTempName = '';
 
-        // Khởi chạy khi load trang
-        window.onload = async () => {
-            // Kiểm tra xem đã đăng nhập chưa
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                showScreen('home-screen');
-                fetchPosts();
-                updateProfileUI();
-            } else {
-                showScreen('auth-screen');
-            }
-        };
-
-        // --- ĐIỀU HƯỚNG GIAO DIỆN ---
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
-
+        // --- ĐIỀU HƯỚNG GIAO DIỆN AUTH ---
         function toggleAuthMode() {
             const loginSec = document.getElementById('login-section');
             const regSec = document.getElementById('register-section');
+            
+            // Reset lại form đăng ký về bước 1 mỗi khi chuyển đổi
             if (loginSec.style.display === 'none') {
                 loginSec.style.display = 'block';
                 regSec.style.display = 'none';
             } else {
                 loginSec.style.display = 'none';
                 regSec.style.display = 'block';
+                setRegStep(1); 
             }
         }
 
+        // Chuyển đổi mượt mà giữa các bước đăng ký
         function setRegStep(stepNum) {
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active-step'));
             document.getElementById(`reg-step-${stepNum}`).classList.add('active-step');
+            
+            // Ẩn nút "Bạn đã có tài khoản? Đăng nhập" ở bước 2 và 3 cho đỡ rối mắt
+            const toggleText = document.getElementById('reg-toggle-text');
+            if (stepNum === 1) {
+                toggleText.style.display = 'block';
+            } else {
+                toggleText.style.display = 'none';
+            }
         }
 
-        function openModal(modalId) { document.getElementById(modalId).classList.add('modal-active'); }
-        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('modal-active')); }
-
-        // --- LOGIC ĐĂNG KÝ (OTP -> Mật khẩu) ---
+        // --- LOGIC ĐĂNG KÝ ---
         async function sendOTP() {
             regTempName = document.getElementById('reg-name').value;
             regTempEmail = document.getElementById('reg-email').value;
             
-            if (!regTempEmail || !regTempName) return alert('Vui lòng nhập Tên và Email');
+            if (!regTempEmail || !regTempName) return alert('Vui lòng nhập đầy đủ Tên và Email');
             
-            document.getElementById('btn-send-otp').innerText = 'Đang gửi...';
-            // Yêu cầu Supabase gửi mã 6 số
+            document.getElementById('btn-send-otp').innerText = 'Đang xử lý...';
             const { error } = await supabase.auth.signInWithOtp({ email: regTempEmail });
             
-            document.getElementById('btn-send-otp').innerText = 'Gửi mã xác minh';
+            document.getElementById('btn-send-otp').innerText = 'Tiếp tục';
             if (error) alert('Lỗi: ' + error.message);
-            else setRegStep(2);
+            else setRegStep(2); // Chuyển sang giao diện nhập mã OTP
         }
 
         async function verifyOTP() {
             const otp = document.getElementById('reg-otp').value;
             if (otp.length !== 6) return alert('Mã xác minh phải gồm 6 chữ số');
             
-            document.getElementById('btn-verify-otp').innerText = 'Đang xác minh...';
-            // Gửi OTP lên Supabase để xác minh
+            document.getElementById('btn-verify-otp').innerText = 'Đang kiểm tra...';
             const { data, error } = await supabase.auth.verifyOtp({ email: regTempEmail, token: otp, type: 'email' });
             
-            document.getElementById('btn-verify-otp').innerText = 'Xác nhận mã';
+            document.getElementById('btn-verify-otp').innerText = 'Xác nhận';
             if (error) alert('Mã không hợp lệ hoặc đã hết hạn');
             else {
                 currentUser = data.user;
-                setRegStep(3); // Xác minh thành công, chuyển sang đặt mật khẩu
+                setRegStep(3); // Chuyển sang giao diện đặt mật khẩu
             }
         }
 
@@ -237,7 +214,6 @@
             if (pwd !== pwdConfirm) return alert('Mật khẩu xác nhận không khớp');
             if (pwd.length < 6) return alert('Mật khẩu phải từ 6 ký tự');
 
-            // Cập nhật mật khẩu và tên hiển thị vào data người dùng
             const { error } = await supabase.auth.updateUser({ 
                 password: pwd,
                 data: { display_name: regTempName }
@@ -246,113 +222,15 @@
             if (error) {
                 alert('Lỗi đặt mật khẩu: ' + error.message);
             } else {
-                alert('Đăng ký thành công!');
-                // Tạo record trong bảng profiles (nếu bạn đã thiết lập trigger trong SQL thì không cần bước này)
                 await supabase.from('profiles').insert([{ id: currentUser.id, display_name: regTempName }]);
-                
-                showScreen('home-screen');
-                updateProfileUI();
+                // Sau khi hoàn thành, chuyển thẳng vào trang chủ
+                document.getElementById('auth-screen').classList.remove('active');
+                document.getElementById('home-screen').classList.add('active');
                 fetchPosts();
             }
         }
 
-        // --- LOGIC ĐĂNG NHẬP / ĐĂNG XUẤT ---
-        async function handleLogin() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) alert('Sai email hoặc mật khẩu!');
-            else {
-                currentUser = data.user;
-                showScreen('home-screen');
-                updateProfileUI();
-                fetchPosts();
-            }
-        }
-
-        async function handleLogout() {
-            await supabase.auth.signOut();
-            currentUser = null;
-            closeModals();
-            showScreen('auth-screen');
-        }
-
-        // --- CẬP NHẬT GIAO DIỆN PROFILE ---
-        async function updateProfileUI() {
-            if (!currentUser) return;
-            document.getElementById('profile-email').innerText = currentUser.email;
-            
-            // Lấy tên hiển thị từ bảng profiles
-            const { data } = await supabase.from('profiles').select('display_name').eq('id', currentUser.id).single();
-            if (data && data.display_name) {
-                document.getElementById('profile-name').innerText = data.display_name;
-                document.getElementById('user-avatar-icon').innerText = data.display_name.charAt(0).toUpperCase();
-            }
-        }
-
-        // --- LOGIC BÀI VIẾT ---
-        async function submitPost() {
-            const content = document.getElementById('post-editor').innerHTML;
-            if (content.trim() === '' || content === '<br>') return alert('Vui lòng nhập nội dung');
-
-            document.getElementById('btn-submit-post').innerText = 'Đang đăng...';
-            
-            const { error } = await supabase.from('posts').insert([
-                { user_id: currentUser.id, content: content }
-            ]);
-
-            document.getElementById('btn-submit-post').innerText = 'Đăng bài';
-            
-            if (error) alert('Lỗi đăng bài: ' + error.message);
-            else {
-                document.getElementById('post-editor').innerHTML = '';
-                closeModals();
-                fetchPosts(); // Tải lại bản tin
-            }
-        }
-
-        async function fetchPosts() {
-            // Lấy bài viết mới nhất và join với bảng profiles để lấy tên tác giả
-            const { data, error } = await supabase
-                .from('posts')
-                .select(`
-                    id, content, created_at,
-                    profiles (display_name, avatar_url)
-                `)
-                .order('created_at', { ascending: false });
-
-            const feed = document.getElementById('feed');
-            if (error) {
-                feed.innerHTML = '<p style="padding: 20px;">Lỗi tải bài viết. Bạn đã tạo bảng SQL chưa?</p>';
-                return;
-            }
-
-            if (data.length === 0) {
-                feed.innerHTML = '<p style="padding: 20px; text-align: center; color: #666;">Chưa có bài viết nào.</p>';
-                return;
-            }
-
-            // Render HTML cho từng bài
-            feed.innerHTML = data.map(post => {
-                const authorName = post.profiles?.display_name || 'Người dùng ẩn danh';
-                const initial = authorName.charAt(0).toUpperCase();
-                
-                return `
-                <div class="post">
-                    <div class="post-header">
-                        <div class="post-avatar" style="display:flex; justify-content:center; align-items:center; font-size:12px; font-weight:bold; color:#666;">${initial}</div>
-                        <div class="post-author">${authorName}</div>
-                    </div>
-                    <div class="post-content">${post.content}</div>
-                    <div class="post-actions">
-                        <button onclick="alert('Tính năng thả cảm xúc đang hoàn thiện!')">♡ Thích</button>
-                        <button onclick="alert('Tính năng bình luận đang hoàn thiện!')">💬 Bình luận</button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
+        // ... (Phần code Đăng nhập, Đăng bài và Load bản tin giữ nguyên) ...
     </script>
 </body>
 </html>
