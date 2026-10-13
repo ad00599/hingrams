@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hingram</title>
-    <!-- Tải thư viện Supabase -->
+    <!-- Tải thư viện Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Tông màu tối giản */
+        /* Tông màu tối giản: Xám nhạt, đen, trắng */
         :root {
             --bg-color: #f7f7f7;
             --container-bg: #ffffff;
@@ -40,12 +40,12 @@
         button:hover { background: #000; }
         button:disabled { background: #cccccc; cursor: not-allowed; }
         
-        /* Style chữ có thể bấm được */
+        /* Style chữ chuyển đổi có thể bấm được */
         .toggle-text { text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 5px; }
         .action-link { color: var(--link-color); font-weight: 600; cursor: pointer; text-decoration: none; margin-left: 4px; }
         .action-link:hover { text-decoration: underline; }
         
-        /* Chuyển bước mượt mà */
+        /* Chuyển bước đăng ký mượt mà */
         .step { display: none; }
         .step.active-step { display: block; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -60,7 +60,7 @@
         .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 15px; }
         .post-actions button { width: auto; padding: 6px 12px; background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 20px; font-size: 13px; margin-right: 10px; }
         
-        /* MODAL */
+        /* MODAL TOÀN MÀN HÌNH */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--container-bg); display: none; z-index: 1000; overflow-y: auto; padding: 20px; }
         .modal-active { display: block; }
         .close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-main); padding: 0; margin: 0; width: auto; }
@@ -97,7 +97,7 @@
                     <!-- Bước 2: Nhập mã xác minh -->
                     <div id="reg-step-2" class="step">
                         <p style="font-size: 13px; color: var(--text-muted); text-align: center; margin-top: 0;">Mã 6 chữ số đã được gửi đến email của bạn</p>
-                        <input type="text" id="reg-otp" placeholder="Nhập mã xác minh" maxlength="6">
+                        <input type="text" id="reg-otp" placeholder="Nhập mã xác minh (6 số)" maxlength="6">
                         <button onclick="verifyOTP()" id="btn-verify-otp">Xác nhận</button>
                         <button onclick="setRegStep(1)" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); margin-top: 5px;">Quay lại</button>
                     </div>
@@ -110,7 +110,7 @@
                         <button onclick="completeRegistration()">Đăng ký</button>
                     </div>
                     
-                    <!-- Nút quay lại đăng nhập -->
+                    <!-- Chữ Đăng nhập bấm được -->
                     <div class="toggle-text" id="reg-toggle-text">
                         Bạn đã có tài khoản? <span class="action-link" onclick="toggleAuthMode()">Đăng nhập</span>
                     </div>
@@ -163,13 +163,11 @@
     <!-- ================= JAVASCRIPT LOGIC ================= -->
     <script>
         // 1. CẤU HÌNH VÀ KHỞI TẠO SUPABASE
-        // !!! THAY ĐÚNG LINK CỦA BẠN VÀO BÊN TRONG 2 DẤU NGOẶC ĐƠN DƯỚI ĐÂY !!!
         const SUPABASE_URL = 'https://ldkwuvqzadkunzauzfvt.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_TTMQlwyRGeMX5xSs_UIM3g_gfl89Rfg';               
 
         let supabaseClient = null;
 
-        // Bọc trong try-catch để dù bạn điền sai link thì giao diện vẫn không bị sập
         try {
             if (window.supabase) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -182,7 +180,7 @@
         let regTempEmail = '';
         let regTempName = '';
 
-        // Tự động kiểm tra đăng nhập khi mở web
+        // Kiểm tra phiên đăng nhập
         window.addEventListener('DOMContentLoaded', async () => {
             if (!supabaseClient) return; 
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -196,7 +194,7 @@
             }
         });
 
-        // --- ĐIỀU HƯỚNG GIAO DIỆN CƠ BẢN ---
+        // --- ĐIỀU HƯỚNG GIAO DIỆN ---
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
@@ -227,34 +225,51 @@
         function openModal(modalId) { document.getElementById(modalId).classList.add('modal-active'); }
         function closeModals() { document.querySelectorAll('.modal').forEach(m => m.classList.remove('modal-active')); }
 
-        // --- LOGIC ĐĂNG KÝ ---
+        // --- LOGIC ĐĂNG KÝ (GỬI MÃ 6 SỐ VỀ EMAIL) ---
         async function sendOTP() {
-            regTempName = document.getElementById('reg-name').value;
-            regTempEmail = document.getElementById('reg-email').value;
+            regTempName = document.getElementById('reg-name').value.trim();
+            regTempEmail = document.getElementById('reg-email').value.trim();
             
             if (!regTempEmail || !regTempName) return alert('Vui lòng nhập Tên và Email');
-            if (!supabaseClient) return alert('Bạn chưa điền đúng Link Supabase trong code!');
+            if (!supabaseClient) return alert('Chưa điền đúng URL/Key Supabase!');
 
             document.getElementById('btn-send-otp').innerText = 'Đang xử lý...';
-            const { error } = await supabaseClient.auth.signInWithOtp({ email: regTempEmail });
+            
+            // Dùng signUp để Supabase phát sinh token 6 chữ số
+            const { error } = await supabaseClient.auth.signUp({ 
+                email: regTempEmail,
+                password: 'TempPassword123!', // Mật khẩu tạm thời
+                options: {
+                    data: { display_name: regTempName }
+                }
+            });
             
             document.getElementById('btn-send-otp').innerText = 'Tiếp tục';
-            if (error) alert('Lỗi: ' + error.message);
-            else setRegStep(2);
+            if (error) {
+                alert('Lỗi: ' + error.message);
+            } else {
+                setRegStep(2); // Chuyển sang ô nhập mã 6 số
+            }
         }
 
         async function verifyOTP() {
-            const otp = document.getElementById('reg-otp').value;
+            const otp = document.getElementById('reg-otp').value.trim();
             if (otp.length !== 6) return alert('Mã xác minh phải gồm 6 chữ số');
             
             document.getElementById('btn-verify-otp').innerText = 'Đang kiểm tra...';
-            const { data, error } = await supabaseClient.auth.verifyOtp({ email: regTempEmail, token: otp, type: 'email' });
+            
+            // Xác minh token 6 số gửi từ email
+            const { data, error } = await supabaseClient.auth.verifyOtp({ 
+                email: regTempEmail, 
+                token: otp, 
+                type: 'signup' 
+            });
             
             document.getElementById('btn-verify-otp').innerText = 'Xác nhận';
             if (error) alert('Mã không hợp lệ hoặc đã hết hạn');
             else {
                 currentUser = data.user;
-                setRegStep(3);
+                setRegStep(3); // Chuyển sang bước đặt mật khẩu thật
             }
         }
 
@@ -265,6 +280,7 @@
             if (pwd !== pwdConfirm) return alert('Mật khẩu xác nhận không khớp');
             if (pwd.length < 6) return alert('Mật khẩu phải từ 6 ký tự');
 
+            // Cập nhật lại mật khẩu chính thức do người dùng chọn
             const { error } = await supabaseClient.auth.updateUser({ 
                 password: pwd,
                 data: { display_name: regTempName }
@@ -273,7 +289,8 @@
             if (error) {
                 alert('Lỗi đặt mật khẩu: ' + error.message);
             } else {
-                await supabaseClient.from('profiles').insert([{ id: currentUser.id, display_name: regTempName }]);
+                // Tạo record trong bảng profiles
+                await supabaseClient.from('profiles').upsert([{ id: currentUser.id, display_name: regTempName }]);
                 showScreen('home-screen');
                 updateProfileUI();
                 fetchPosts();
@@ -282,10 +299,10 @@
 
         // --- LOGIC ĐĂNG NHẬP / ĐĂNG XUẤT ---
         async function handleLogin() {
-            const email = document.getElementById('login-email').value;
+            const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
             
-            if (!supabaseClient) return alert('Bạn chưa điền đúng Link Supabase trong code!');
+            if (!supabaseClient) return alert('Chưa điền đúng URL/Key Supabase!');
 
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) alert('Sai email hoặc mật khẩu!');
@@ -304,7 +321,7 @@
             showScreen('auth-screen');
         }
 
-        // --- LOGIC GIAO DIỆN BÀI VIẾT / PROFILE ---
+        // --- LOGIC BÀI VIẾT VÀ TRANG CÁ NHÂN ---
         async function updateProfileUI() {
             if (!currentUser || !supabaseClient) return;
             document.getElementById('profile-email').innerText = currentUser.email;
@@ -341,7 +358,7 @@
 
             const feed = document.getElementById('feed');
             if (error) {
-                feed.innerHTML = '<p style="padding: 20px; text-align: center; color: #666;">Chưa lấy được bài viết (Bạn đã tạo bảng SQL chưa?)</p>';
+                feed.innerHTML = '<p style="padding: 20px; text-align: center; color: #666;">Chưa thể lấy bài viết (Kiểm tra lại kết nối Supabase).</p>';
                 return;
             }
 
