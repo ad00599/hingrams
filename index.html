@@ -7,111 +7,105 @@
     <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Tông màu tối giản xám nhạt, đen, trắng */
+        /* Tông màu xám nhạt tối giản, cao cấp */
         :root {
-            --bg-color: #f0f2f5;
+            --bg-color: #f4f5f7;
             --container-bg: #ffffff;
-            --text-main: #050505;
+            --text-main: #111111;
             --text-muted: #65676b;
             --border-color: #e4e6eb;
             --btn-bg: #e4e6eb;
-            --btn-text: #050505;
+            --btn-hover: #d8dadf;
             --primary-dark: #18191c;
+            --base-font-size: 15px;
         }
+
+        body.dark-theme {
+            --bg-color: #18191a;
+            --container-bg: #242526;
+            --text-main: #e4e6eb;
+            --text-muted: #b0b3b8;
+            --border-color: #3e4042;
+            --btn-bg: #3a3b3c;
+            --btn-hover: #4e4f50;
+            --primary-dark: #ffffff;
+        }
+
         * { box-sizing: border-box; }
         body {
             background-color: var(--bg-color); color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: var(--base-font-size);
             margin: 0; padding: 0; display: flex; justify-content: center;
+            transition: background 0.2s, color 0.2s;
         }
+
         .screen { display: none; width: 100%; max-width: 600px; min-height: 100vh; background: var(--container-bg); border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
         .active { display: block; }
-        
-        /* GIAO DIỆN AUTH (CĂN GIỮA) */
+
+        /* HEADER TRANG CHỦ */
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--container-bg); z-index: 100; }
+        .logo-box { display: flex; flex-direction: column; }
+        .logo-title { font-family: 'Playfair Display', 'Georgia', serif; font-weight: 800; font-size: 26px; letter-spacing: 2px; color: var(--text-main); margin: 0; text-transform: uppercase; }
+        .logo-subtitle { font-size: 10px; letter-spacing: 3px; color: var(--text-muted); text-transform: uppercase; margin-top: -2px; }
+
+        /* AVATAR MẶC ĐỊNH SẠCH */
+        .default-avatar-icon { width: 42px; height: 42px; border-radius: 50%; background: var(--btn-bg); display: flex; justify-content: center; align-items: center; cursor: pointer; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0; }
+        .default-avatar-icon svg { width: 24px; height: 24px; fill: var(--text-muted); }
+        .default-avatar-icon img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* GIAO DIỆN AUTH CĂN GIỮA */
         #auth-screen { background-color: var(--bg-color); border: none; max-width: 100%; }
         .auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         .auth-card { width: 100%; max-width: 380px; background: var(--container-bg); padding: 40px 30px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid var(--border-color); }
-        .auth-card h1 { text-align: center; margin-top: 0; margin-bottom: 25px; font-weight: 800; letter-spacing: 2px; font-size: 32px; font-family: 'Georgia', serif; }
+        .auth-card h1 { text-align: center; margin-top: 0; margin-bottom: 25px; font-weight: 800; font-size: 32px; font-family: 'Georgia', serif; letter-spacing: 2px; }
         
-        input, textarea { width: 100%; padding: 12px 14px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; background: #fafafa; outline: none; }
-        input:focus, textarea:focus { border-color: #888; background: #fff; }
+        input, textarea, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; background: var(--bg-color); color: var(--text-main); outline: none; }
         
-        button { width: 100%; padding: 12px; background: var(--primary-dark); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
+        button { width: 100%; padding: 12px; background: var(--primary-dark); color: var(--container-bg); border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
         button:hover { opacity: 0.9; }
-        .btn-secondary { background: var(--btn-bg); color: var(--btn-text); }
-        
-        .toggle-text { text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 10px; }
-        .action-link { color: #000; font-weight: 700; cursor: pointer; text-decoration: underline; }
+        .btn-secondary { background: var(--btn-bg); color: var(--text-main); }
+        .btn-secondary:hover { background: var(--btn-hover); }
+
+        .toggle-text { text-align: center; color: var(--text-muted); font-size: 14px; }
+        .action-link { color: var(--text-main); font-weight: 700; cursor: pointer; text-decoration: underline; }
         .step { display: none; }
         .step.active-step { display: block; }
 
-        /* HEADER / LOGO TRANG CHỦ */
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--container-bg); z-index: 100; }
-        .logo-title { font-family: 'Georgia', serif; font-weight: 800; font-size: 22px; letter-spacing: 1.5px; color: var(--text-main); margin: 0; }
-        
-        /* ICON AVATAR MẶC ĐỊNH */
-        .default-avatar-icon { width: 40px; height: 40px; border-radius: 50%; background: #e4e6eb; display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0; }
-        .default-avatar-icon svg { width: 24px; height: 24px; fill: #8a8d91; margin-top: 4px; }
-        .default-avatar-icon img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* THANH ĐĂNG BÀI FB-STYLE */
+        /* THANH ĐĂNG BÀI FB STYLE */
         .create-post-bar { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 8px solid var(--bg-color); background: var(--container-bg); }
-        .post-input-trigger { flex: 1; background: var(--bg-color); border-radius: 20px; padding: 10px 16px; color: var(--text-muted); font-size: 14px; cursor: pointer; user-select: none; border: 1px solid var(--border-color); }
-        .post-input-trigger:hover { background: #e4e6eb; }
+        .post-input-trigger { flex: 1; background: var(--bg-color); border-radius: 20px; padding: 12px 18px; color: var(--text-muted); font-size: 14px; cursor: pointer; border: 1px solid var(--border-color); }
 
         /* BÀI VIẾT FEED */
-        .post { padding: 16px 20px; border-bottom: 8px solid var(--bg-color); background: var(--container-bg); }
+        .post { padding: 18px 20px; border-bottom: 8px solid var(--bg-color); background: var(--container-bg); }
         .post-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
         .post-author-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .post-author-name { font-weight: 700; font-size: 15px; color: var(--text-main); }
-        .post-time { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-        .post-more-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); padding: 4px 8px; width: auto; }
-        .post-content { font-size: 15px; line-height: 1.5; margin-bottom: 12px; word-break: break-word; }
+        .post-author-name { font-weight: 700; font-size: 15px; }
+        .post-time { font-size: 12px; color: var(--text-muted); }
+        .post-content { font-size: var(--base-font-size); line-height: 1.6; margin-bottom: 12px; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word; }
+        .post-content a { color: #0066cc; text-decoration: underline; }
         .post-image { width: 100%; border-radius: 8px; margin-bottom: 12px; max-height: 450px; object-fit: cover; border: 1px solid var(--border-color); }
-        
-        /* THẢ CẢM XÚC & BÌNH LUẬN */
-        .post-stats { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); padding-bottom: 8px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; }
-        .post-actions-bar { display: flex; justify-content: space-around; gap: 5px; }
-        .action-btn { flex: 1; padding: 8px; background: transparent; color: var(--text-muted); border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; margin: 0; }
-        .action-btn:hover { background: var(--bg-color); }
-        .action-btn.active-react { color: #000; font-weight: 700; }
-        
-        /* POPUP CẢM XÚC */
-        .react-popup { display: none; position: absolute; bottom: 40px; left: 10px; background: #fff; border: 1px solid var(--border-color); border-radius: 20px; padding: 4px 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); gap: 8px; z-index: 10; }
-        .react-popup span { font-size: 20px; cursor: pointer; transition: transform 0.1s; }
-        .react-popup span:hover { transform: scale(1.3); }
-
-        /* KHU VỰC BÌNH LUẬN */
-        .comments-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); display: none; }
-        .comment-item { display: flex; gap: 10px; margin-bottom: 10px; }
-        .comment-bubble { background: var(--bg-color); padding: 8px 12px; border-radius: 12px; font-size: 13px; flex: 1; }
-        .comment-author { font-weight: 700; margin-bottom: 2px; cursor: pointer; }
-        .comment-actions { font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; gap: 10px; }
-        .comment-actions span { cursor: pointer; }
-        .comment-actions span:hover { text-decoration: underline; }
+        .read-more-btn { color: var(--text-muted); font-weight: 700; cursor: pointer; margin-left: 5px; }
 
         /* MODAL TOÀN MÀN HÌNH */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: var(--container-bg); width: 100%; max-width: 550px; height: 100%; max-height: 90vh; border-radius: 12px; overflow-y: auto; padding: 20px; position: relative; display: flex; flex-direction: column; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px; }
-        .modal-title { font-weight: 700; font-size: 18px; margin: 0; }
-        .close-btn { background: var(--btn-bg); border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-weight: bold; font-size: 16px; width: 32px; padding: 0; margin: 0; }
+        .full-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--container-bg); display: none; z-index: 1000; overflow-y: auto; flex-direction: column; }
+        .full-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; border-bottom: 1px solid var(--border-color); sticky: top; background: var(--container-bg); }
+        .full-modal-body { padding: 20px; flex: 1; max-width: 600px; width: 100%; margin: 0 auto; }
 
-        /* TRÌNH SOẠN THẢO RICH TEXT */
-        .editor-toolbar { display: flex; gap: 6px; margin-bottom: 10px; background: var(--bg-color); padding: 6px; border-radius: 8px; }
-        .editor-btn { width: 32px; height: 32px; padding: 0; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; color: #000; font-weight: bold; cursor: pointer; margin: 0; }
-        .post-editor { min-height: 140px; border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; outline: none; font-size: 15px; line-height: 1.5; margin-bottom: 12px; background: #fff; }
+        /* TRÌNH SOẠN THẢO VĂN BẢN (RICH TEXT EDITOR) */
+        .editor-container { min-height: 180px; padding: 12px; outline: none; border: none; font-size: 16px; line-height: 1.5; word-break: break-word; }
+        .editor-toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
+        .editor-btn { width: auto; padding: 6px 12px; margin: 0; background: var(--btn-bg); color: var(--text-main); font-size: 13px; font-weight: 600; border-radius: 6px; }
 
-        /* TRANG CÁ NHÂN FB STYLE */
-        .profile-cover { width: 100%; height: 180px; background: #d0d4dc; position: relative; border-bottom: 1px solid var(--border-color); }
-        .profile-cover img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-avatar-wrapper { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); width: 90px; height: 90px; border-radius: 50%; border: 4px solid #fff; background: #e4e6eb; overflow: hidden; }
-        .profile-header-info { text-align: center; margin-top: 50px; padding: 0 20px 20px; border-bottom: 1px solid var(--border-color); }
-        .profile-name { font-size: 22px; font-weight: 800; margin: 0 0 5px; }
-        .profile-bio { color: var(--text-muted); font-size: 14px; margin: 0 0 15px; }
-        .social-link-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .social-link-title { font-weight: 600; font-size: 13px; }
-        .social-link-open { background: var(--primary-dark); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; width: auto; margin: 0; }
+        /* TRANG CÁ NHÂN */
+        .profile-cover-area { width: 100%; height: 200px; background: #c8cbd0; position: relative; border-bottom: 1px solid var(--border-color); }
+        .profile-cover-area img { width: 100%; height: 100%; object-fit: cover; }
+        .cover-camera-btn { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.6); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; border: none; width: auto; }
+        .profile-avatar-center { position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%); width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--container-bg); background: var(--btn-bg); overflow: hidden; }
+        .avatar-camera-btn { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.5); color: #fff; text-align: center; font-size: 10px; padding: 2px 0; cursor: pointer; }
+
+        .profile-info-sec { text-align: center; margin-top: 55px; padding: 0 20px 20px; border-bottom: 1px solid var(--border-color); }
+        .social-link-card { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -158,13 +152,15 @@
     <!-- ================= MÀN HÌNH TRANG CHỦ ================= -->
     <div id="home-screen" class="screen">
         <div class="header">
-            <h1 class="logo-title">Hingram</h1>
+            <div class="logo-box">
+                <h1 class="logo-title">Hingram</h1>
+                <span class="logo-subtitle">Social Network</span>
+            </div>
             <div class="default-avatar-icon" id="current-user-avatar" onclick="openMyProfile()">
                 <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             </div>
         </div>
 
-        <!-- THANH ĐĂNG BÀI FB STYLE -->
         <div class="create-post-bar">
             <div class="default-avatar-icon" id="bar-user-avatar" onclick="openMyProfile()">
                 <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -172,98 +168,144 @@
             <div class="post-input-trigger" onclick="openCreatePostModal()">Hãy viết gì đó...</div>
         </div>
 
-        <!-- DANH SÁCH BÀI VIẾT -->
         <div id="feed">
             <div style="padding: 30px; text-align: center; color: var(--text-muted);">Đang tải bài viết...</div>
         </div>
     </div>
 
-    <!-- ================= MODAL TẠO / SỬA BÀI VIẾT ================= -->
-    <div id="create-post-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modal-post-title">Tạo bài viết</h3>
-                <button class="close-btn" onclick="closeModals()">✕</button>
+    <!-- ================= MODAL ĐĂNG BÀI (TOÀN MÀN HÌNH) ================= -->
+    <div id="create-post-modal" class="full-modal">
+        <div class="full-modal-header">
+            <button class="btn-secondary" style="width:auto; margin:0;" onclick="closeModal('create-post-modal')">Hủy</button>
+            <h3 style="margin:0; font-size:16px;" id="post-modal-heading">Tạo bài viết</h3>
+            <button id="btn-submit-post" style="width:auto; margin:0;" onclick="submitPost()">Đăng</button>
+        </div>
+        
+        <div class="full-modal-body">
+            <!-- TÁC GIẢ -->
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px;">
+                <div class="default-avatar-icon" id="editor-author-avatar">
+                    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </div>
+                <div>
+                    <div style="font-weight:700;" id="editor-author-name">Người dùng</div>
+                </div>
             </div>
-            
+
+            <!-- KHU VỰC NHẬP NỘI DUNG -->
+            <div contenteditable="true" id="post-editor" class="editor-container" placeholder="Hãy viết gì đó..."></div>
+
+            <img id="post-image-preview" style="display:none; width:100%; max-height:250px; object-fit:cover; border-radius:8px; margin-bottom:15px;">
+
+            <!-- THANH CÔNG CỤ BÊN DƯỚI -->
             <div class="editor-toolbar">
-                <button class="editor-btn" onclick="execCmd('bold')">B</button>
+                <button class="editor-btn" onclick="execCmd('formatBlock', '<h1>')">H1</button>
+                <button class="editor-btn" onclick="execCmd('formatBlock', '<h2>')">H2</button>
+                <button class="editor-btn" onclick="execCmd('formatBlock', '<h3>')">H3</button>
+                <button class="editor-btn" onclick="execCmd('bold')"><b>B</b></button>
                 <button class="editor-btn" onclick="execCmd('italic')"><i>I</i></button>
                 <button class="editor-btn" onclick="execCmd('underline')"><u>U</u></button>
-                <button class="editor-btn" onclick="execCmd('insertUnorderedList')">•</button>
+                <button class="editor-btn" onclick="execCmd('insertUnorderedList')">• Danh sách</button>
+                <label class="editor-btn" style="cursor:pointer; display:inline-block;">
+                    📷 Thêm ảnh
+                    <input type="file" id="post-image-input" accept="image/*" style="display:none;" onchange="previewPostImage(event)">
+                </label>
             </div>
-
-            <div contenteditable="true" id="post-editor" class="post-editor" placeholder="Hãy viết gì đó..."></div>
-            
-            <div style="margin-bottom: 15px;">
-                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 5px;">Thêm ảnh vào bài viết:</label>
-                <input type="file" id="post-image-input" accept="image/*" onchange="previewPostImage(event)">
-                <img id="post-image-preview" style="display:none; width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-top:8px;">
-            </div>
-
-            <button id="btn-submit-post" onclick="submitPost()">Đăng bài</button>
         </div>
     </div>
 
-    <!-- ================= MODAL TRANG CÁ NHÂN (PROFILE) ================= -->
-    <div id="profile-modal" class="modal">
-        <div class="modal-content" style="padding:0; max-width:600px;">
-            <div style="position:absolute; top:12px; right:12px; z-index:10; display:flex; gap:8px;">
-                <button class="close-btn" onclick="copyProfileLink()" title="Chia sẻ trang cá nhân">⋯</button>
-                <button class="close-btn" onclick="closeModals()">✕</button>
-            </div>
-            
-            <div class="profile-cover" id="profile-cover-box">
-                <div class="profile-avatar-wrapper" id="profile-avatar-box">
-                    <svg viewBox="0 0 24 24" style="width:100%; height:100%; fill:#8a8d91;"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    <!-- ================= MODAL TRANG CÁ NHÂN (TOÀN MÀN HÌNH) ================= -->
+    <div id="profile-modal" class="full-modal">
+        <div class="full-modal-header">
+            <button class="btn-secondary" style="width:auto; margin:0;" onclick="closeModal('profile-modal')">← Quay lại</button>
+            <h3 style="margin:0; font-size:16px;">Trang cá nhân</h3>
+            <button class="btn-secondary" style="width:auto; margin:0;" onclick="openProfileOptionsMenu()">⋯</button>
+        </div>
+
+        <div style="flex:1;">
+            <div class="profile-cover-area" id="profile-cover-box">
+                <button class="cover-camera-btn" id="btn-view-cover" onclick="handleViewOrUploadCover()">📷 Xem/Tải ảnh bìa</button>
+                <div class="profile-avatar-center" id="profile-avatar-box">
+                    <svg viewBox="0 0 24 24" style="width:100%; height:100%; fill:var(--text-muted);"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    <div class="avatar-camera-btn" id="btn-view-avatar" onclick="handleViewOrUploadAvatar()">Ảnh đại diện</div>
                 </div>
             </div>
 
-            <div class="profile-header-info">
-                <h2 class="profile-name" id="view-profile-name">Đang tải...</h2>
-                <p class="profile-bio" id="view-profile-bio">Chưa có tiểu sử.</p>
+            <div class="profile-info-sec">
+                <h2 style="margin:0 0 5px;" id="view-profile-name">Đang tải...</h2>
+                <p style="color:var(--text-muted); font-size:14px; margin:0 0 15px;" id="view-profile-bio">Chưa có tiểu sử.</p>
                 
                 <div id="own-profile-actions" style="display:none; margin-bottom:15px;">
-                    <button class="btn-secondary" style="width:auto; padding:8px 16px; margin:0 4px;" onclick="openEditProfileModal()">Chỉnh sửa trang cá nhân</button>
-                    <button class="btn-secondary" style="width:auto; padding:8px 16px; margin:0 4px; color:#ff3b30;" onclick="handleLogout()">Đăng xuất</button>
+                    <button class="btn-secondary" onclick="openEditProfileModal()">Chỉnh sửa trang cá nhân</button>
                 </div>
 
-                <!-- THÔNG TIN MẠNG XÃ HỘI / WEBSITE -->
-                <div id="social-links-container" style="text-align:left; margin-top:15px;"></div>
+                <div id="social-links-container" style="text-align:left;"></div>
             </div>
 
-            <div style="padding: 15px 20px;">
-                <h4 style="margin: 0 0 15px;">Bài viết của tác giả</h4>
+            <div style="padding:20px; max-width:600px; margin:0 auto;">
+                <h4 style="margin:0 0 15px;">Bài viết của tác giả</h4>
                 <div id="profile-posts-feed"></div>
             </div>
         </div>
     </div>
 
-    <!-- ================= MODAL CHỈNH SỬA PROFILE ================= -->
-    <div id="edit-profile-modal" class="modal">
-        <div class="modal-content" style="max-width:450px; max-height:85vh;">
-            <div class="modal-header">
-                <h3 class="modal-title">Chỉnh sửa trang cá nhân</h3>
-                <button class="close-btn" onclick="closeEditProfileModal()">✕</button>
-            </div>
-            
-            <label style="font-size:12px; font-weight:700;">Tên hiển thị</label>
+    <!-- ================= MODAL CHỈNH SỬA PROFILE (TOÀN MÀN HÌNH) ================= -->
+    <div id="edit-profile-modal" class="full-modal">
+        <div class="full-modal-header">
+            <button class="btn-secondary" style="width:auto; margin:0;" onclick="closeModal('edit-profile-modal')">Hủy</button>
+            <h3 style="margin:0; font-size:16px;">Chỉnh sửa trang cá nhân</h3>
+            <button style="width:auto; margin:0;" onclick="saveProfileChanges()">Lưu</button>
+        </div>
+
+        <div class="full-modal-body">
+            <label style="font-weight:700; font-size:13px;">Tên hiển thị</label>
             <input type="text" id="edit-display-name">
-            
-            <label style="font-size:12px; font-weight:700;">Bio (Tiểu sử)</label>
+
+            <label style="font-weight:700; font-size:13px;">Bio (Tiểu sử)</label>
             <textarea id="edit-bio" rows="3"></textarea>
 
-            <label style="font-size:12px; font-weight:700;">Ảnh đại diện (Avatar)</label>
-            <input type="file" id="edit-avatar-file" accept="image/*">
+            <label style="font-weight:700; font-size:13px;">Liên kết mạng xã hội / Website</label>
+            <div id="edit-links-list"></div>
+            <button class="btn-secondary" onclick="addNewLinkInputRow()">+ Thêm liên kết mới</button>
+        </div>
+    </div>
 
-            <label style="font-size:12px; font-weight:700;">Ảnh bìa (Cover)</label>
-            <input type="file" id="edit-cover-file" accept="image/*">
+    <!-- ================= MODAL CÀI ĐẶT & BẢO MẬT ================= -->
+    <div id="settings-modal" class="full-modal">
+        <div class="full-modal-header">
+            <button class="btn-secondary" style="width:auto; margin:0;" onclick="closeModal('settings-modal')">Đóng</button>
+            <h3 style="margin:0; font-size:16px;">Cài đặt</h3>
+            <div style="width:40px;"></div>
+        </div>
 
-            <label style="font-size:12px; font-weight:700;">Thêm liên kết mạng xã hội / Website</label>
-            <input type="text" id="link-title-input" placeholder="Tên nền tảng (VD: Facebook, Website)">
-            <input type="url" id="link-url-input" placeholder="Đường dẫn (https://...)">
+        <div class="full-modal-body">
+            <h4 style="margin-top:0;">Thông tin tài khoản</h4>
+            <div class="social-link-card">
+                <span>Email</span>
+                <strong id="setting-email">...</strong>
+            </div>
+            <div class="social-link-card">
+                <span>Ngày đăng ký</span>
+                <strong id="setting-created-at">...</strong>
+            </div>
 
-            <button onclick="saveProfileChanges()">Lưu thay đổi</button>
+            <h4>Tùy chỉnh giao diện</h4>
+            <div class="social-link-card">
+                <span>Chế độ Tối (Dark Mode)</span>
+                <button class="btn-secondary" style="width:auto; margin:0;" onclick="toggleDarkMode()">Bật/Tắt</button>
+            </div>
+            <div class="social-link-card">
+                <span>Kích cỡ chữ</span>
+                <select id="font-size-select" style="width:auto; margin:0;" onchange="changeFontSize(this.value)">
+                    <option value="14px">Nhỏ</option>
+                    <option value="15px" selected>Vừa</option>
+                    <option value="17px">Lớn</option>
+                </select>
+            </div>
+
+            <div style="margin-top:30px;">
+                <button style="background:#ff3b30; color:#fff;" onclick="handleLogout()">Đăng xuất</button>
+            </div>
         </div>
     </div>
 
@@ -277,7 +319,7 @@
             if (window.supabase) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
-        } catch (err) { console.warn("Lỗi Supabase client:", err); }
+        } catch (err) { console.warn("Supabase init error:", err); }
 
         let currentUser = null;
         let regTempEmail = '', regTempName = '';
@@ -285,7 +327,6 @@
         let currentViewingUserId = null;
         let currentPostImageData = null;
 
-        // Khởi tạo ứng dụng
         window.addEventListener('DOMContentLoaded', async () => {
             if (!supabaseClient) return;
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -316,10 +357,10 @@
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-        function execCmd(cmd) { document.execCommand(cmd, false, null); }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function execCmd(cmd, value = null) { document.execCommand(cmd, false, value); }
 
-        // AUTH LOGIC
+        // AUTH
         async function sendOTP() {
             regTempName = document.getElementById('reg-name').value.trim();
             regTempEmail = document.getElementById('reg-email').value.trim();
@@ -369,17 +410,28 @@
 
         async function handleLogout() {
             await supabaseClient.auth.signOut();
-            currentUser = null; closeModals(); showScreen('auth-screen');
+            currentUser = null;
+            closeModal('settings-modal'); closeModal('profile-modal');
+            showScreen('auth-screen');
         }
 
-        // BIÊN TẬP & ĐĂNG BÀI
+        // ĐĂNG BÀI TOÀN MÀN HÌNH
         function openCreatePostModal(postId = null, existingContent = '', existingImg = '') {
             editingPostId = postId;
-            document.getElementById('modal-post-title').innerText = postId ? 'Chỉnh sửa bài viết' : 'Tạo bài viết';
+            document.getElementById('post-modal-heading').innerText = postId ? 'Chỉnh sửa bài viết' : 'Tạo bài viết';
             document.getElementById('post-editor').innerHTML = existingContent;
             document.getElementById('post-image-preview').style.display = existingImg ? 'block' : 'none';
             if (existingImg) document.getElementById('post-image-preview').src = existingImg;
             currentPostImageData = existingImg;
+
+            if (currentUser) {
+                supabaseClient.from('profiles').select('display_name, avatar_url').eq('id', currentUser.id).single().then(({data}) => {
+                    if (data) {
+                        document.getElementById('editor-author-name').innerText = data.display_name;
+                        if (data.avatar_url) document.getElementById('editor-author-avatar').innerHTML = `<img src="${data.avatar_url}">`;
+                    }
+                });
+            }
             openModal('create-post-modal');
         }
 
@@ -401,7 +453,6 @@
             if (!content.trim() || content === '<br>') return alert('Vui lòng nhập nội dung');
 
             document.getElementById('btn-submit-post').innerText = 'Đang xử lý...';
-            
             let error;
             if (editingPostId) {
                 ({ error } = await supabaseClient.from('posts').update({ content, image_url: currentPostImageData }).eq('id', editingPostId));
@@ -409,33 +460,46 @@
                 ({ error } = await supabaseClient.from('posts').insert([{ user_id: currentUser.id, content, image_url: currentPostImageData }]));
             }
 
-            document.getElementById('btn-submit-post').innerText = 'Đăng bài';
+            document.getElementById('btn-submit-post').innerText = 'Đăng';
             if (error) alert(error.message);
             else {
-                closeModals(); fetchPosts();
+                closeModal('create-post-modal'); fetchPosts();
                 if (currentViewingUserId) renderProfilePosts(currentViewingUserId);
             }
         }
 
-        // TẢI BÀI VIẾT FEED
+        // TẢI FEED BÀI VIẾT & XỬ LÝ CHUỖI LINK / XEM THÊM
         async function fetchPosts() {
             const { data, error } = await supabaseClient.from('posts')
-                .select(`*, profiles(display_name, avatar_url), reactions(*), comments(*)`)
+                .select(`*, profiles(display_name, avatar_url)`)
                 .order('created_at', { ascending: false });
 
             const feed = document.getElementById('feed');
             if (error || !data) { feed.innerHTML = '<p style="text-align:center; padding:20px;">Chưa thể tải bài viết.</p>'; return; }
-
             feed.innerHTML = data.map(post => renderSinglePostHTML(post)).join('');
+        }
+
+        function autoLinkText(html) {
+            const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+            return html.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener">$1</a>');
         }
 
         function renderSinglePostHTML(post) {
             const author = post.profiles?.display_name || 'Người dùng';
             const isOwner = currentUser && currentUser.id === post.user_id;
             const timeAgo = new Date(post.created_at).toLocaleDateString('vi-VN');
-            const reactionsCount = post.reactions ? post.reactions.length : 0;
-            const commentsCount = post.comments ? post.comments.length : 0;
-            const userReacted = post.reactions?.find(r => r.user_id === currentUser?.id);
+            
+            let formattedContent = autoLinkText(post.content);
+            let contentDisplay = formattedContent;
+
+            // Xử lý XEM THÊM cho bài viết dài
+            if (formattedContent.length > 220) {
+                const shortContent = formattedContent.substring(0, 220);
+                contentDisplay = `
+                    <span id="short-content-${post.id}">${shortContent}... <span class="read-more-btn" onclick="toggleReadMore('${post.id}', true)">Xem thêm</span></span>
+                    <span id="full-content-${post.id}" style="display:none;">${formattedContent} <span class="read-more-btn" onclick="toggleReadMore('${post.id}', false)">Thu gọn</span></span>
+                `;
+            }
 
             return `
             <div class="post" id="post-${post.id}">
@@ -449,102 +513,21 @@
                             <div class="post-time">${timeAgo}</div>
                         </div>
                     </div>
-                    ${isOwner ? `<button class="post-more-btn" onclick="togglePostOwnerMenu('${post.id}')">⋯</button>` : ''}
+                    ${isOwner ? `<button class="btn-secondary" style="width:auto; padding:4px 8px; margin:0;" onclick="togglePostOwnerMenu('${post.id}')">⋯</button>` : ''}
                 </div>
 
-                <div class="post-content">${post.content}</div>
+                <div class="post-content">${contentDisplay}</div>
                 ${post.image_url ? `<img src="${post.image_url}" class="post-image">` : ''}
-
-                <div class="post-stats">
-                    <span>👍 ${reactionsCount} cảm xúc</span>
-                    <span>💬 ${commentsCount} bình luận</span>
-                </div>
-
-                <div class="post-actions-bar" style="position:relative;">
-                    <div class="react-popup" id="react-popup-${post.id}">
-                        <span onclick="toggleReaction('${post.id}', 'LIKE')">👍</span>
-                        <span onclick="toggleReaction('${post.id}', 'LOVE')">❤️</span>
-                        <span onclick="toggleReaction('${post.id}', 'HAHA')">😆</span>
-                        <span onclick="toggleReaction('${post.id}', 'WOW')">😮</span>
-                        <span onclick="toggleReaction('${post.id}', 'SAD')">😢</span>
-                    </div>
-                    <button class="action-btn ${userReacted ? 'active-react' : ''}" onclick="showReactPopup('${post.id}')">
-                        ${userReacted ? '❤️ Đã thích' : '♡ Thích'}
-                    </button>
-                    <button class="action-btn" onclick="toggleCommentsSection('${post.id}')">💬 Bình luận</button>
-                    <button class="action-btn" onclick="copyPostLink('${post.id}')">🔗 Chia sẻ</button>
-                </div>
-
-                <div class="comments-section" id="comments-${post.id}">
-                    <div id="comment-list-${post.id}">
-                        ${(post.comments || []).map(c => `
-                            <div class="comment-item" id="comment-${c.id}">
-                                <div class="comment-bubble">
-                                    <div class="comment-author">${c.user_name || 'Người dùng'}</div>
-                                    <div>${c.content}</div>
-                                    <div class="comment-actions">
-                                        ${currentUser && currentUser.id === c.user_id ? `
-                                            <span onclick="deleteComment('${c.id}', '${post.id}')">Xóa</span>
-                                        ` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div style="display:flex; gap:8px; margin-top:8px;">
-                        <input type="text" id="input-comment-${post.id}" placeholder="Viết bình luận..." style="margin:0;">
-                        <button style="width:auto; margin:0;" onclick="submitComment('${post.id}')">Gửi</button>
-                    </div>
-                </div>
             </div>`;
         }
 
-        // CẢM XÚC & BÌNH LUẬN
-        function showReactPopup(id) {
-            const pop = document.getElementById(`react-popup-${id}`);
-            pop.style.display = pop.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        async function toggleReaction(postId, type) {
-            document.getElementById(`react-popup-${postId}`).style.display = 'none';
-            const { data: existing } = await supabaseClient.from('reactions').select('*').eq('post_id', postId).eq('user_id', currentUser.id).single();
-            
-            if (existing) {
-                await supabaseClient.from('reactions').delete().eq('id', existing.id);
-            } else {
-                await supabaseClient.from('reactions').insert([{ post_id: postId, user_id: currentUser.id, type }]);
-            }
-            fetchPosts();
-        }
-
-        function toggleCommentsSection(id) {
-            const sec = document.getElementById(`comments-${id}`);
-            sec.style.display = sec.style.display === 'block' ? 'none' : 'block';
-        }
-
-        async function submitComment(postId) {
-            const inp = document.getElementById(`input-comment-${postId}`);
-            const val = inp.value.trim();
-            if (!val) return;
-
-            const { data: prof } = await supabaseClient.from('profiles').select('display_name').eq('id', currentUser.id).single();
-            await supabaseClient.from('posts');
-            await supabaseClient.from('comments').insert([{
-                post_id: postId, user_id: currentUser.id, content: val, user_name: prof?.display_name || 'Người dùng'
-            }]);
-            inp.value = '';
-            fetchPosts();
-        }
-
-        async function deleteComment(commentId, postId) {
-            if (confirm('Bạn muốn xóa bình luận này?')) {
-                await supabaseClient.from('comments').delete().eq('id', commentId);
-                fetchPosts();
-            }
+        function toggleReadMore(postId, showFull) {
+            document.getElementById(`short-content-${postId}`).style.display = showFull ? 'none' : 'inline';
+            document.getElementById(`full-content-${postId}`).style.display = showFull ? 'inline' : 'none';
         }
 
         function togglePostOwnerMenu(postId) {
-            if (confirm('Bạn muốn chỉnh sửa hay xóa bài viết này?\n- Ok: Chỉnh sửa\n- Cancel: Xóa bài')) {
+            if (confirm('Chỉnh sửa bài viết? (Bấm Cancel để Xóa bài)')) {
                 const content = document.querySelector(`#post-${postId} .post-content`).innerHTML;
                 const img = document.querySelector(`#post-${postId} .post-image`)?.src || '';
                 openCreatePostModal(postId, content, img);
@@ -555,12 +538,7 @@
             }
         }
 
-        function copyPostLink(id) {
-            navigator.clipboard.writeText(`${window.location.href}#post-${id}`);
-            alert('Đã sao chép liên kết bài viết!');
-        }
-
-        // TRANG CÁ NHÂN (PROFILE)
+        // PROFILE & CÀI ĐẶT
         async function loadUserProfileHeader() {
             if (!currentUser) return;
             const { data } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
@@ -594,8 +572,8 @@
             const links = prof?.social_links || [];
             linksCont.innerHTML = links.map(l => `
                 <div class="social-link-card">
-                    <span class="social-link-title">${l.title}</span>
-                    <button class="social-link-open" onclick="window.open('${l.url}', '_blank')">Mở</button>
+                    <span style="font-weight:600; font-size:13px;">${l.title}</span>
+                    <button class="btn-secondary" style="width:auto; margin:0;" onclick="window.open('${l.url}', '_blank')">Mở</button>
                 </div>
             `).join('');
 
@@ -605,7 +583,7 @@
 
         async function renderProfilePosts(userId) {
             const { data } = await supabaseClient.from('posts')
-                .select(`*, profiles(display_name, avatar_url), reactions(*), comments(*)`)
+                .select(`*, profiles(display_name, avatar_url)`)
                 .eq('user_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -614,40 +592,89 @@
             feed.innerHTML = data.map(post => renderSinglePostHTML(post)).join('');
         }
 
+        function openProfileOptionsMenu() {
+            if (confirm('Bạn muốn làm gì?\n- Ok: Sao chép liên kết trang cá nhân\n- Cancel: Mở Cài đặt tài khoản')) {
+                navigator.clipboard.writeText(`${window.location.href}#user-${currentViewingUserId}`);
+                alert('Đã sao chép liên kết trang cá nhân!');
+            } else {
+                if (currentUser) {
+                    document.getElementById('setting-email').innerText = currentUser.email;
+                    document.getElementById('setting-created-at').innerText = new Date(currentUser.created_at).toLocaleDateString('vi-VN');
+                    openModal('settings-modal');
+                }
+            }
+        }
+
         function openEditProfileModal() {
+            supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single().then(({data}) => {
+                if (data) {
+                    document.getElementById('edit-display-name').value = data.display_name || '';
+                    document.getElementById('edit-bio').value = data.bio || '';
+                    
+                    const list = document.getElementById('edit-links-list');
+                    list.innerHTML = '';
+                    (data.social_links || []).forEach(l => addNewLinkInputRow(l.title, l.url));
+                }
+            });
             openModal('edit-profile-modal');
         }
 
-        function closeEditProfileModal() {
-            document.getElementById('edit-profile-modal').style.display = 'none';
+        function addNewLinkInputRow(title = '', url = '') {
+            const div = document.createElement('div');
+            div.className = 'link-input-row';
+            div.style.marginBottom = '10px';
+            div.innerHTML = `
+                <input type="text" placeholder="Tên nền tảng (VD: Facebook)" value="${title}" class="link-title-val">
+                <input type="url" placeholder="Đường dẫn (https://...)" value="${url}" class="link-url-val">
+            `;
+            document.getElementById('edit-links-list').appendChild(div);
         }
 
         async function saveProfileChanges() {
             const name = document.getElementById('edit-display-name').value.trim();
             const bio = document.getElementById('edit-bio').value.trim();
-            const linkTitle = document.getElementById('link-title-input').value.trim();
-            const linkUrl = document.getElementById('link-url-input').value.trim();
+            
+            let links = [];
+            document.querySelectorAll('.link-input-row').forEach(row => {
+                const t = row.querySelector('.link-title-val').value.trim();
+                const u = row.querySelector('.link-url-val').value.trim();
+                if (t && u) links.push({ title: t, url: u });
+            });
 
-            let updates = { id: currentUser.id };
-            if (name) updates.display_name = name;
-            if (bio) updates.bio = bio;
+            await supabaseClient.from('profiles').upsert({
+                id: currentUser.id, display_name: name, bio: bio, social_links: links
+            });
 
-            if (linkTitle && linkUrl) {
-                const { data: prof } = await supabaseClient.from('profiles').select('social_links').eq('id', currentUser.id).single();
-                let currentLinks = prof?.social_links || [];
-                currentLinks.push({ title: linkTitle, url: linkUrl });
-                updates.social_links = currentLinks;
-            }
-
-            await supabaseClient.from('profiles').upsert(updates);
-            closeEditProfileModal();
+            closeModal('edit-profile-modal');
             openUserProfile(currentUser.id);
             loadUserProfileHeader();
         }
 
-        function copyProfileLink() {
-            navigator.clipboard.writeText(`${window.location.href}#user-${currentViewingUserId}`);
-            alert('Đã sao chép liên kết trang cá nhân!');
+        function handleViewOrUploadCover() {
+            const url = prompt('Nhập đường dẫn ảnh bìa mới (URL image):');
+            if (url) {
+                supabaseClient.from('profiles').update({ cover_url: url }).eq('id', currentUser.id).then(() => {
+                    openUserProfile(currentUser.id);
+                });
+            }
+        }
+
+        function handleViewOrUploadAvatar() {
+            const url = prompt('Nhập đường dẫn ảnh đại diện mới (URL image):');
+            if (url) {
+                supabaseClient.from('profiles').update({ avatar_url: url }).eq('id', currentUser.id).then(() => {
+                    openUserProfile(currentUser.id);
+                    loadUserProfileHeader();
+                });
+            }
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-theme');
+        }
+
+        function changeFontSize(size) {
+            document.documentElement.style.setProperty('--base-font-size', size);
         }
     </script>
 </body>
